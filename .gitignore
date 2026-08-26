@@ -1,0 +1,17 @@
+#build output
+build/
+*.0
+*.elf
+*.bin
+*.hex
+*.map
+*.d
+
+# ST-Link / OpenOCD artifacts
+*.log
+
+# Editor/IDE junk (for vscode)
+.vscode/
+
+# OS junk
+.DS_Store
