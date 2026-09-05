@@ -42,14 +42,17 @@ int main(void) {
         // uart_send_byte(c); //echo it back 
 
         // set test byte
-        uart_send_byte(0x55);
-        uint8_t got = uart_read_byte();
-        if (got == 0x55) {
-            GPIOC_ODR &= ~(1 << 13); // turn on if received correctly
-        } else {
-            GPIOC_ODR |= (1 << 13); //mismatch -> led off
-        }
-        for (volatile int i = 0; i < 800000; i++);
+        // uart_send_byte(0x55);
+        // uint8_t got = uart_read_byte();
+        // if (got == 0x55) {
+        //     GPIOC_ODR &= ~(1 << 13); // turn on if received correctly
+        // } else {
+        //     GPIOC_ODR |= (1 << 13); //mismatch -> led off
+        // }
+        // for (volatile int i = 0; i < 800000; i++);
+
+        uint8_t c = uart_read_byte();
+        uart_send_byte(c);
     }
 }
 

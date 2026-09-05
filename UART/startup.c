@@ -25,6 +25,7 @@ void (* const vector_table[]) (void) = {
     (void (*)(void)) &_estack, //word 0: initial stack pointer value
     Reset_Handler,
     NMI_Handler,
+    HardFault_Handler,
     MemManage_Handler,
     BusFault_Handler,
     UsageFault_Handler,
