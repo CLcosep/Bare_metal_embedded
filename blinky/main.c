@@ -1,26 +1,30 @@
 #include <stdint.h>
+#include "../firmware_lib/gpio.h"
+#include "../firmware_lib/systick.h"
+#include "../firmware_lib/timer.h"
 
-#define RCC_APB2ENR (*(volatile uint32_t *)0x40021018)
-#define GPIOC_CRH   (*(volatile uint32_t *)0x40011004)
-#define GPIOC_ODR   (*(volatile uint32_t *)0x4001100C)
-// adding Timers
-#define RCC_APB1ENR (*(volatile uint32_t *)0x4002101C)
-#define TIM2_CR1    (*(volatile uint32_t *)0x40000000)
-#define TIM2_SR     (*(volatile uint32_t *)0x40000010)
-#define TIM2_EGR    (*(volatile uint32_t *)0x40000014)
-#define TIM2_CNT    (*(volatile uint32_t *)0x40000024)
-#define TIM2_PSC    (*(volatile uint32_t *)0x40000028)
-#define TIM2_ARR    (*(volatile uint32_t *)0x4000002C)
-// SysTick
-#define SYST_CSR    (*(volatile uint32_t *)0xE000E010)
-#define SYST_RVR    (*(volatile uint32_t *)0xE000E014)
-#define SYST_CVR    (*(volatile uint32_t *)0xE000E018)
 
-volatile uint32_t ms_tick = 0;
+// #define RCC_APB2ENR (*(volatile uint32_t *)0x40021018)
+// #define GPIOC_CRH   (*(volatile uint32_t *)0x40011004)
+// #define GPIOC_ODR   (*(volatile uint32_t *)0x4001100C)
+// // adding Timers
+// #define RCC_APB1ENR (*(volatile uint32_t *)0x4002101C)
+// #define TIM2_CR1    (*(volatile uint32_t *)0x40000000)
+// #define TIM2_SR     (*(volatile uint32_t *)0x40000010)
+// #define TIM2_EGR    (*(volatile uint32_t *)0x40000014)
+// #define TIM2_CNT    (*(volatile uint32_t *)0x40000024)
+// #define TIM2_PSC    (*(volatile uint32_t *)0x40000028)
+// #define TIM2_ARR    (*(volatile uint32_t *)0x4000002C)
+// // SysTick
+// #define SYST_CSR    (*(volatile uint32_t *)0xE000E010)
+// #define SYST_RVR    (*(volatile uint32_t *)0xE000E014)
+// #define SYST_CVR    (*(volatile uint32_t *)0xE000E018)
 
-void SysTick_Handler(void) {
-    ms_tick++;
-}
+// volatile uint32_t ms_tick = 0;
+
+// void SysTick_Handler(void) {
+//     ms_tick++;
+// }
 
 // void delay_ms(uint32_t ms) {
 //     TIM2_PSC = 7999;    //8MHz / 8000 = 1kHz -> 1ms per tick
@@ -35,29 +39,41 @@ void SysTick_Handler(void) {
 // }
 
 int main(void) {
-    RCC_APB2ENR |= (1 << 4); //turn GPIOC clock (IOPCEN)
-    // timer TIM2
-    // RCC_APB1ENR |= (1 << 0); //bit 0 TIM2EN
+    // RCC_APB2ENR |= (1 << 4); //turn GPIOC clock (IOPCEN)
+    // // timer TIM2
+    // // RCC_APB1ENR |= (1 << 0); //bit 0 TIM2EN
 
-    GPIOC_CRH &= ~(0xF << 20); //clear 4 bits for pin13
-    GPIOC_CRH |= (0x1 << 20);  //MODE13 = 01 (Output, 10MHZ) CNF13 = 00 (push pull)
+    // GPIOC_CRH &= ~(0xF << 20); //clear 4 bits for pin13
+    // GPIOC_CRH |= (0x1 << 20);  //MODE13 = 01 (Output, 10MHZ) CNF13 = 00 (push pull)
 
-    SYST_RVR = 7999;
-    SYST_CVR = 0;
-    SYST_CSR = (1 << 0) | (1 << 1) | (1 << 2);
+    // SYST_RVR = 7999;
+    // SYST_CVR = 0;
+    // SYST_CSR = (1 << 0) | (1 << 1) | (1 << 2);
 
-    uint32_t last_toggle = 0;
+    // uint32_t last_toggle = 0;
+
+    // // while (1) {
+    // //     GPIOC_ODR ^= (1 << 13); //toggle pc13
+    // //     // for (volatile int i = 0; i < 200000; i++); //crude delay
+    // //     delay_ms(500);
+    // // }
 
     // while (1) {
-    //     GPIOC_ODR ^= (1 << 13); //toggle pc13
-    //     // for (volatile int i = 0; i < 200000; i++); //crude delay
-    //     delay_ms(500);
+    //     if ((ms_tick - last_toggle) >= 500) {
+    //         GPIOC_ODR ^= (1 << 13);
+    //         last_toggle = ms_tick;
+    //     }
     // }
 
-    while (1) {
-        if ((ms_tick - last_toggle) >= 500) {
-            GPIOC_ODR ^= (1 << 13);
-            last_toggle = ms_tick;
+    gpio_clock_en(GPIOC_BASE);
+    gpio_set_mode(GPIOC_BASE, 13, GPIO_CNF_OUTPUT_PP_10MHZ);
+    systick_init_1ms();
+
+    uint32_t last_toggle = 0;
+    while(1) {
+        if ((millis() - last_toggle) >= 500) {
+            gpio_toggle(GPIOC_BASE, 13);
+            last_toggle = millis();
         }
     }
 }
